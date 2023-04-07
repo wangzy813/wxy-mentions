@@ -8,13 +8,13 @@
     "name": "wangxunyi",
     "email": "1738791725@qq.com"
   },
-  "main": "./dist/mentions.umd.cjs",
-  "module": "./dist/mentions.js",
-  "types": ".dist/components/index.d.ts",
+  "main": "./dist/mentions.umd.js",
+  "module": "./dist/mentions.mjs",
+  "types": ".dist/index.d.ts",
   "exports": {
     ".": {
-      "import": "./dist/mentions.js",
-      "require": "./dist/mentions.umd.cjs"
+      "import": "./dist/mentions.mjs",
+      "require": "./dist/mentions.umd.js"
     }
   },
   "files": [
@@ -27,6 +27,7 @@
     "registry": "https://registry.npmjs.org",
     "access": "public"
   },
+  "keywords":["mentions","at","@"],
   "scripts": {
     "dev": "vite serve",
     "build": "run-p type-check build-only",

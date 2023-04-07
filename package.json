@@ -1,6 +1,6 @@
 {
   "name": "wxy-mentions",
-  "version": "0.0.0",
+  "version": "0.0.1",
   "private": false,
   "keyword": "mentions",
   "license": "MIT",
@@ -27,7 +27,11 @@
     "registry": "https://registry.npmjs.org",
     "access": "public"
   },
-  "keywords":["mentions","at","@"],
+  "keywords": [
+    "mentions",
+    "at",
+    "@"
+  ],
   "scripts": {
     "dev": "vite serve",
     "build": "run-p type-check build-only",

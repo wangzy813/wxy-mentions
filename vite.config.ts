@@ -7,6 +7,7 @@ import dts from 'vite-plugin-dts'
 // https://vitejs.dev/config/
 export default defineConfig({
   plugins: [vue(), dts()],
+  // plugins: [vue()],
   resolve: {
     alias: {
       '@': fileURLToPath(new URL('./src', import.meta.url)),
@@ -23,7 +24,7 @@ export default defineConfig({
         entry: resolve(__dirname, 'packages/index.ts'),
         name: 'mentions',
         // 构建生成的文件名，与package.json中配置一致
-        fileName: 'mentions'
+        fileName: (format) => `mentions.${format}.ts`
     },
     rollupOptions: {
         // 确保外部化处理那些你不想打包进库的依赖

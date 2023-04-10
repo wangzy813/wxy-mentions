@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref } from 'vue'
-// import mentions from './packages/mentions/mentions.vue'
+import { Mentions } from '@/mentions/index'
 
 const list: any = []
 for (let i = 0; i < 20; i++) {
@@ -27,17 +27,22 @@ const click = (e: Object) => {
 const search = (e: String) => {
   console.log('search', e)
 }
+const change = (e: String) => {
+  console.log('change', e)
+  console.log('change', value.value)
+}
 </script>
 
 <template>
   <Mentions
     ref="mentionsRef"
-    type="O"
+    type="input"
     :person-list="list"
     v-model="value"
     @blur="onBlur"
+    @change="change"
     :disabled="disabled"
-    :placeholder="disabled ? '' : '请输入Objective'"
+    placeholder="请输入"
     @success="success"
     :highlightId="1"
     @click="click"
@@ -46,7 +51,4 @@ const search = (e: String) => {
 </template>
 
 <style scoped lang="less">
-/deep/.at-span{
-  // background-color: #000 !important;
-}
 </style>

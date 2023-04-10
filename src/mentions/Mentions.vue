@@ -1,11 +1,11 @@
 <template>
-  <div ref="" :class="`at__${type}`">
+  <div ref="" :class="`wxy-at__${type}`">
     <div class="at-editor at-editor-placeholder" :placeholder="placeholder" ref="Editor" tabindex="0"
       :contenteditable="!disabled" @focus="focus" @blur="blur" @click="click" @input="input" @keydown="keydown"
       @paste="doOnPaste" v-html="innerText"></div>
-    <div ref="Mention" @mouseover="mouseover" @mouseout="mouseout">
+    <div ref="Mention" @mouseenter="mouseenter" @mouseleave="mouseleave">
       <MentionModal ref="mentionModalRef" v-if="isShowModel" v-model="searchValue" :personList="personList" :type="type"
-        @insertMention="insertMention" :style="[atDialogPos, { visibility: isShowModel ? 'visible' : 'hidden' }]"
+        @insertMention="insertMention" :style="[{ visibility: isShowModel ? 'visible' : 'hidden' }]"
         :top="top" :left="left" />
     </div>
   </div>
@@ -16,7 +16,6 @@ import MentionModal from './components/MentionModal.vue'
 import type { personListType } from "./types"
 
 const props = defineProps({
-  // 类型目前为 O、KR 样式有差别
   type: String,
   modelValue: String,
   // 是否禁用
@@ -48,7 +47,7 @@ const props = defineProps({
   }
 })
 const innerText = ref<any>(props.modelValue)
-const emit = defineEmits(['update:modelValue', 'input', 'blur', 'focus', 'success', 'click', 'search'])
+const emit = defineEmits(['update:modelValue', 'change', 'blur', 'focus', 'success', 'click', 'search'])
 const searchValue = ref('')
 const Editor = ref()
 const top = ref()
@@ -57,6 +56,9 @@ const isChange = ref(true)
 const Mention = ref()
 const editorRange = ref()
 const mentionModalRef = ref()
+const handleHTMLStr = (str:String) => {
+  return str.replace(/ is-highlight/g, '')
+}
 const focus = (e: any) => {
   if (props.disabled) return
   isChange.value = false
@@ -66,16 +68,18 @@ const blur = (e: any) => {
   if (props.disabled) return
   getEditorRange()
   isChange.value = true
-  e.target.innerHTML.replace(/is-myselfe/g, '')
-  if (!isShowModel.value) emit('blur', e.target.innerHTML)
+  const htmlStr = handleHTMLStr(e.target.innerHTML)
+  if (!isShowModel.value) emit('blur', htmlStr)
   if (isFoucs.value) isShowModel.value = false
 }
 const input = (e: any) => {
   if (props.disabled) return
-  emit('update:modelValue', e.target.innerHTML)
+  emit('update:modelValue', handleHTMLStr(e.target.innerHTML))
+  emit('change', handleHTMLStr(e.target.innerHTML))
   if (isShowModel.value) {
-    doToggleDialog()
+    console.log('input')
     emit('search', searchValue.value)
+    doToggleDialog()
   }
 }
 const click = (e: any) => {
@@ -123,8 +127,8 @@ const keydown = (e: any) => {
 }
 const isShowModel = ref(false)
 const insertMention = (item: Object) => {
-  isShowModel.value = false
   selectPerson(item)
+  isShowModel.value = false
 }
 const getEditorRange = () => {
   let range = null
@@ -199,7 +203,7 @@ const selectPerson = async (person: any) => {
       editorRangeA.setEnd(textNode, endOffset)
       editorRangeA.deleteContents() // 删除草稿end
       const span = document.createElement('span')
-      span.className = 'at-span'
+      span.className = person.id == props.highlightId ? 'at-span is-highlight' : 'at-span'
       span.dataset.person = `${person.id}&${person.name}`
       span.textContent = `@${person.name}`
       span.contentEditable = 'false'
@@ -207,7 +211,8 @@ const selectPerson = async (person: any) => {
       insertHtmlAtCaret([span, bSpaceNode], editorRange.value.selection, editorRange.value.range, 1)
     }
   }
-  emit('update:modelValue', Editor.value.innerHTML)
+  emit('update:modelValue', handleHTMLStr(Editor.value.innerHTML))
+  emit('change', handleHTMLStr(Editor.value.innerHTML))
   emit('success', person)
 }
 // 文本替换
@@ -237,28 +242,23 @@ const insertHtmlAtCaret = (html: any, selection: any, range: any, offset: any) =
   }
 }
 const isFoucs = ref(true)
-// 判断鼠标是否在弹窗内
-const mouseout = (e: any) => {
-  if (e.target.className === 'list-item') {
-    isFoucs.value = true
-  }
+const mouseleave = () => {
+  isFoucs.value = true
 }
-const mouseover = (e: any) => {
-  if (e.target.className === 'list-item') {
-    isFoucs.value = false
-  }
+const mouseenter = () => {
+  isFoucs.value = false
 }
 watch(() => props.modelValue, (newVal) => {
   if (isChange.value) {
     innerText.value = newVal
   }
 })
-const atDialogPos = ref()
 const onFocus = () => {
   Editor.value.focus()
 }
 const reset = () => {
   innerText.value = ''
+  emit('update:modelValue', '')
 }
 // 粘贴事件
 const doOnPaste = (e: any) => {
@@ -283,8 +283,8 @@ const replaceContent = () => {
   if (spanList.length === 0) return
   spanList.forEach((item: any) => {
     const id = item.dataset.person.split('&')[0]
-    if (id === props.highlightId || Number(id) === props.highlightId) {
-      item.className = 'at-span is-myselfe'
+    if (id == props.highlightId) {
+      item.className = 'at-span is-highlight'
     }
   })
 }
@@ -303,11 +303,12 @@ defineExpose({
 
 <script lang="ts">
 export default {
-  name:'Mentions'
+  name: 'Mentions'
 }
 </script>
-
 <style lang="less">
+@import './style.less';
+
 .at-editor {
   word-break: break-all;
   user-select: text;
@@ -315,6 +316,14 @@ export default {
   cursor: text;
   min-height: 30px;
   outline: none;
+}
+
+.at-editor-placeholder:empty:before {
+  // content: '填写内容，输入@以选择某人';
+  content: attr(placeholder);
+  color: gray;
+  cursor: text;
+  pointer-events: none;
 }
 
 .at-span {
@@ -333,7 +342,7 @@ export default {
   }
 }
 
-.at__O {
+.wxy-at__input {
   .at-editor {
     padding: 4px;
     // height: 30px;
@@ -346,20 +355,7 @@ export default {
   }
 }
 
-.at__KR {
-  .at-editor {
-    padding: 5px;
-    // height: 30px;
-    line-height: 1.5;
-    font-size: 14px;
-  }
-
-  .at-span {
-    font-size: 14px;
-  }
-}
-
-.at__comment {
+.wxy-at__textarea {
   .at-editor {
     padding: 5px;
     // height: 30px;
@@ -374,43 +370,19 @@ export default {
   }
 }
 
-.at__progress {
-  .at-editor {
-    padding: 5px;
-    // height: 30px;
-    line-height: 1.7;
-    font-size: 14px;
-    min-height: 80px;
+.wxy-at__input,
+.wxy-at__textarea {
+  .active {
+    background-color: rgba(126, 134, 142, 0.12);
   }
 
-  .at-span {
-    font-size: 14px;
-    line-height: 1.5;
-  }
-}
-
-.at-editor-placeholder:empty:before {
-  // content: '填写内容，输入@以选择某人';
-  content: attr(placeholder);
-  color: gray;
-  cursor: text;
-  pointer-events: none;
-}
-
-// .empty:focus:before {
-//   content: none;
-// }
-
-.active {
-  background-color: rgba(126, 134, 142, 0.12);
-}
-
-.is-myselfe {
-  background-color: #0089ff;
-  color: #fff;
-
-  &:hover {
+  .is-highlight {
     background-color: #0089ff;
+    color: #fff;
+
+    &:hover {
+      background-color: #0089ff;
+    }
   }
 }
 </style>

@@ -2,16 +2,15 @@ import { fileURLToPath, URL } from 'node:url'
 import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
 import {resolve} from 'path'
-import dts from 'vite-plugin-dts'
+// import dts from 'vite-plugin-dts'
 
 // https://vitejs.dev/config/
 export default defineConfig({
-  plugins: [vue(), dts()],
-  // plugins: [vue()],
+  // plugins: [vue(), dts()],
+  plugins: [vue()],
   resolve: {
     alias: {
       '@': fileURLToPath(new URL('./src', import.meta.url)),
-      '~': fileURLToPath(new URL('./packages', import.meta.url))
     }
   },
   server: {
@@ -21,7 +20,7 @@ export default defineConfig({
   build: {
     lib: {
       // 入口指向组件库入口模块
-        entry: resolve(__dirname, 'packages/index.ts'),
+        entry: resolve(__dirname, 'src/mentions/index.ts'),
         name: 'mentions',
         // 构建生成的文件名，与package.json中配置一致
         fileName: (format) => `mentions.${format}.ts`

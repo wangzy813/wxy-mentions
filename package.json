@@ -8,18 +8,7 @@
     "name": "wangxunyi",
     "email": "1738791725@qq.com"
   },
-  "module": "./dist/mentions.es.ts",
   "main": "./dist/mentions.umd.ts",
-  "exports": {
-    ".": {
-      "import": "./dist/mentions.es.ts",
-      "require": "./dist/mentions.umd.ts"
-    },
-    "./dist/style.css": {
-      "import": "./dist/style.css",
-      "require": "./dist/style.css"
-    }
-  },
   "files": [
     "package.json",
     "README.md",

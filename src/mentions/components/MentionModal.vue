@@ -1,12 +1,11 @@
 <template>
-  <div class="mention-modal" :style="{ top: top, left: left }">
-    <div ref="listRef" class="list" @mouseout="onMouseout" @mouseover="onMouserOver(-1)">
+  <div class="wxy-mention-modal" :style="{ top: top, left: left }">
+    <div ref="listRef" class="wxy-list">
       <div class="not-data" v-show="personList.length == 0">暂无数据</div>
       <List ref="listItemRef" v-for="item, index in personList" :class="{ 'is-active': index === activeIndex }"
-        :key="item.id" @click="insertMentionHandler(item)">
+        :key="item.id" @click="insertMentionHandler(item)"  @mouseout="onMouseout" @mouseover="onMouserOver(index)">
         <div class="content">
-          <img class="avatar" width="26"
-            :src="item.avatar || 'https://cube.elemecdn.com/9/c2/f0ee8a3c7c9638a54940382568c9dpng.png'" />
+          <img class="avatar" width="26" :src="item.avatar || './src/assets/avatar.png'" />
           <div class="content-name">{{ item.name }}</div>
         </div>
       </List>
@@ -17,9 +16,7 @@
 <script lang="ts" setup>
 import { onMounted, ref, onBeforeMount, watch } from 'vue'
 import List from './List.vue'
-import { debounce } from '../utils'
 import type { personListType } from "../types";
-
 
 const isMouserOver = ref(false)
 const listItemRef = ref()
@@ -38,13 +35,14 @@ const props = defineProps({
 const activeIndex = ref(0)
 const emit = defineEmits(['hideMentionModal', 'insertMention', 'Backspace', 'hiden'])
 const insertMentionHandler = (item: Object) => {
+  console.log(item)
   emit('insertMention', item)
   emit('hideMentionModal') // 隐藏 modal
 }
-const onInput = debounce(() => {
+const onInput = () => {
   if (listRef.value) listRef.value.scrollTop = 0
   activeIndex.value = 0
-}, 300)
+}
 onBeforeMount(() => {
 })
 onMounted(() => {
@@ -112,9 +110,8 @@ defineExpose({
 })
 </script>
 
-<style scoped lang="less">
-@import '../style.less';
-.mention-modal {
+<style lang="less">
+.wxy-mention-modal {
   position: fixed;
   z-index: 9999;
   box-sizing: border-box;
@@ -127,17 +124,17 @@ defineExpose({
   }
 }
 
-.list::-webkit-scrollbar {
-  width: 6px;
-}
+.wxy-list {
+  &::-webkit-scrollbar-thumb {
+    background-color: transparent;
+    opacity: 0;
+    border-radius: 5px;
+  }
 
-.list::-webkit-scrollbar-thumb {
-  background-color: transparent;
-  opacity: 0;
-  border-radius: 5px;
-}
+  &::-webkit-scrollbar {
+    width: 6px;
+  }
 
-.list {
   box-sizing: border-box;
   background-color: #fff;
   box-shadow: rgb(0 0 0 / 20%) 0px 10px 20px 0px;
@@ -149,8 +146,6 @@ defineExpose({
   .not-data {
     text-align: center;
   }
-
-  .avatar {}
 
   .content {
     width: 100%;
@@ -164,13 +159,14 @@ defineExpose({
       flex: 1;
     }
   }
-}
 
-.is-active {
-  background-color: var(--hover-bg-color);
+  .is-active {
+    background-color: var(--hover-bg-color);
 
-  .content-name {
-    color: var(--hover-text-color);
+    .content-name {
+      color: var(--hover-text-color);
+    }
   }
+
 }
 </style>

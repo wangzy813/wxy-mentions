@@ -24,7 +24,7 @@ const search = (e: String) => {
   list.value = []
   setTimeout(() => {
     let arr:any = []
-    for (let i = 0; i < 0; i++) {
+    for (let i = 0; i < 20; i++) {
       arr.push({
         id: i,
         name: `王某${i}`,

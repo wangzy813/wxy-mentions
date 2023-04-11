@@ -4,10 +4,8 @@
     "src/**/*.ts",
     "src/**/*.tsx",
     "src/**/*.vue",
-    "typings/**/*.ts",
-    "tests/**/*.ts",
-    "tests/**/*.tsx"
-, "App.vue.ts"  ],
+    "env.d.ts"
+  ],
   "compilerOptions": {
     "baseUrl": ".",
     "paths": {

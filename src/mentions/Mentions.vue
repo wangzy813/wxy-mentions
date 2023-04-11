@@ -6,7 +6,7 @@
     <div ref="Mention" @mouseenter="mouseenter" @mouseleave="mouseleave">
       <MentionModal ref="mentionModalRef" v-if="isShowModel" v-model="searchValue" :personList="personList" :type="type"
         @insertMention="insertMention" :style="[{ visibility: isShowModel ? 'visible' : 'hidden' }]" :top="top"
-        :left="left" :loading="loading">
+        :left="left" :loading="loading" :loadingBg="loadingBg">
         <template v-slot:empty>
           <slot name="empty"></slot>
         </template>
@@ -53,6 +53,10 @@ const props = defineProps({
     type: Boolean,
     default: false,
   },
+  loadingBg:{
+    type: String,
+    default: '#0089ff',
+  }
 })
 const innerText = ref<any>(props.modelValue)
 const emit = defineEmits(['update:modelValue', 'change', 'blur', 'focus', 'success', 'click', 'search'])
@@ -165,7 +169,7 @@ const doToggleDialog = () => {
   const curNode = rangeInfo.range.endContainer
   if (!curNode || curNode.nodeName !== '#text') isShowModel.value = false
   const searchStr: any = curNode?.textContent?.slice(0, rangeInfo.selection.focusOffset)
-  const keywords = (/@([^@]*)$/).exec(searchStr)
+  const keywords = (/([^@]*)$/).exec(searchStr)
   if (keywords) {
     // 展示搜索选人
     const keyWords = keywords[1]
@@ -278,6 +282,9 @@ watch(() => props.modelValue, (newVal) => {
 const onFocus = () => {
   Editor.value.focus()
 }
+const onBlur = () => {
+  Editor.value.blur()
+}
 const reset = () => {
   innerText.value = ''
   emit('update:modelValue', '')
@@ -315,10 +322,9 @@ onMounted(() => {
 })
 defineExpose({
   onFocus,
+  onBlur,
   reset,
-  editorRange,
   Editor,
-  replaceContent,
 })
 
 </script>

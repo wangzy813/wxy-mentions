@@ -3,9 +3,9 @@
     <div ref="listRef" class="wxy-list">
       <div class="not-data" v-show="personList.length == 0">暂无数据</div>
       <List ref="listItemRef" v-for="item, index in personList" :class="{ 'is-active': index === activeIndex }"
-        :key="item.id" @click="insertMentionHandler(item)"  @mouseout="onMouseout" @mouseover="onMouserOver(index)">
+        :key="item.id" @click="insertMentionHandler(item)" @mouseout="onMouseout" @mouseover="onMouserOver(index)">
         <div class="content">
-          <img class="avatar" width="26" :src="item.avatar || './src/assets/avatar.png'" />
+          <img class="avatar" width="26" :src="item.avatar || avatar" />
           <div class="content-name">{{ item.name }}</div>
         </div>
       </List>
@@ -17,6 +17,7 @@
 import { onMounted, ref, onBeforeMount, watch } from 'vue'
 import List from './List.vue'
 import type { personListType } from "../types";
+import avatar from "@/assets/avatar.png";
 
 const isMouserOver = ref(false)
 const listItemRef = ref()

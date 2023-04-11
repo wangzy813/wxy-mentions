@@ -5,8 +5,12 @@
       @paste="doOnPaste" v-html="innerText"></div>
     <div ref="Mention" @mouseenter="mouseenter" @mouseleave="mouseleave">
       <MentionModal ref="mentionModalRef" v-if="isShowModel" v-model="searchValue" :personList="personList" :type="type"
-        @insertMention="insertMention" :style="[{ visibility: isShowModel ? 'visible' : 'hidden' }]"
-        :top="top" :left="left" />
+        @insertMention="insertMention" :style="[{ visibility: isShowModel ? 'visible' : 'hidden' }]" :top="top"
+        :left="left" :loading="loading">
+        <template v-slot:empty>
+          <slot name="empty"></slot>
+        </template>
+      </MentionModal>
     </div>
   </div>
 </template>
@@ -44,7 +48,11 @@ const props = defineProps({
     default: () => {
       return []
     }
-  }
+  },
+  loading: {
+    type: Boolean,
+    default: false,
+  },
 })
 const innerText = ref<any>(props.modelValue)
 const emit = defineEmits(['update:modelValue', 'change', 'blur', 'focus', 'success', 'click', 'search'])
@@ -56,7 +64,7 @@ const isChange = ref(true)
 const Mention = ref()
 const editorRange = ref()
 const mentionModalRef = ref()
-const handleHTMLStr = (str:String) => {
+const handleHTMLStr = (str: String) => {
   return str.replace(/ is-highlight/g, '')
 }
 const focus = (e: any) => {
@@ -70,12 +78,14 @@ const blur = (e: any) => {
   isChange.value = true
   const htmlStr = handleHTMLStr(e.target.innerHTML)
   if (!isShowModel.value) emit('blur', htmlStr)
-  if (isFoucs.value) isShowModel.value = false
+  if (isFoucs.value || props.loading) isShowModel.value = false
 }
 const input = (e: any) => {
   if (props.disabled) return
   emit('update:modelValue', handleHTMLStr(e.target.innerHTML))
   emit('change', handleHTMLStr(e.target.innerHTML))
+  editorRange.value = getEditorRange()
+  console.log(editorRange.value)
   if (isShowModel.value) {
     console.log('input')
     emit('search', searchValue.value)
@@ -173,15 +183,27 @@ const doToggleDialog = () => {
 }
 // 弹窗位置
 const setPosition = (rect: any) => {
-  if (props.position === 'bottom-right') {
-    top.value = `${rect.top + 20}px`
-    left.value = `${rect.left}px`
-  } else if (props.position === 'top-left') {
-    top.value = `${rect.top - 270}px`
-    left.value = `${rect.left - 200}px`
-  } else if (props.position === 'bottom-left') {
-    top.value = `${rect.top + 20}px`
-    left.value = `${rect.left - 200}px`
+  switch (props.position) {
+    case 'bottom-right':
+      top.value = `${rect.top + 25}px`
+      left.value = `${rect.left}px`
+      break;
+    case 'bottom-left':
+      top.value = `${rect.top + 20}px`
+      left.value = `${rect.left - 200}px`
+      break;
+    case 'top-left':
+      top.value = `${rect.top - 270}px`
+      left.value = `${rect.left - 200}px`
+      break;
+    case 'top-right':
+      top.value = `${rect.top - 270}px`
+      left.value = `${rect.left}px`
+      break;
+    default:
+      top.value = `${rect.top + 25}px`
+      left.value = `${rect.left}px`
+      break;
   }
 }
 // @选人
@@ -328,7 +350,7 @@ export default {
 
 .at-span {
   background-color: transparent;
-  color: #0089ff;
+  color: var(--label-text-color);
   border-radius: 3px;
   padding: 0px 2px;
   margin: 0 3px;
@@ -337,7 +359,7 @@ export default {
   line-height: 1.3;
 
   &:hover {
-    background-color: rgba(126, 134, 142, 0.12);
+    background-color: var(--label-bg-hover-color);
     cursor: pointer;
   }
 }
@@ -345,7 +367,18 @@ export default {
 .wxy-at__input {
   .at-editor {
     padding: 4px;
-    // height: 30px;
+    line-height: 1.7;
+    font-size: 16px;
+  }
+
+  .at-span {
+    font-size: 15px;
+  }
+}
+
+.wxy-at__O {
+  .at-editor {
+    padding: 4px;
     line-height: 1.5;
     font-size: 16px;
   }
@@ -354,6 +387,19 @@ export default {
     font-size: 15px;
   }
 }
+
+.wxy-at__KR {
+  .at-editor {
+    padding: 5px;
+    line-height: 1.5;
+    font-size: 14px;
+  }
+
+  .at-span {
+    font-size: 14px;
+  }
+}
+
 
 .wxy-at__textarea {
   .at-editor {
@@ -371,17 +417,20 @@ export default {
 }
 
 .wxy-at__input,
-.wxy-at__textarea {
+.wxy-at__textarea,
+.wxy-at__O,
+.wxy-at__KR {
   .active {
-    background-color: rgba(126, 134, 142, 0.12);
+    background-color: var(--label-bg-hover-color);
   }
 
   .is-highlight {
-    background-color: #0089ff;
-    color: #fff;
+    background-color: var(--label-ht-bg-color);
+    color: var(--label-ht-text-color);
 
     &:hover {
-      background-color: #0089ff;
+      background-color: var(--label-ht-bg-hover-color);
+      color: var(--label-ht-text-hover-color);
     }
   }
 }

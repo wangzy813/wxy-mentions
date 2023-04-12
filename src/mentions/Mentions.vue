@@ -20,8 +20,14 @@ import MentionModal from './components/MentionModal.vue'
 import type { personListType } from "./types"
 
 const props = defineProps({
-  type: String,
-  modelValue: String,
+  type: {
+    type:String,
+    default: 'input'
+  },
+  modelValue: {
+    type: String,
+    default: undefined
+  },
   // 是否禁用
   disabled: {
     type: Boolean,
@@ -68,6 +74,8 @@ const isChange = ref(true)
 const Mention = ref()
 const editorRange = ref()
 const mentionModalRef = ref()
+const isShowModel = ref(false)
+const isFoucs = ref(true)
 const handleHTMLStr = (str: String) => {
   return str.replace(/ is-highlight/g, '')
 }
@@ -78,10 +86,9 @@ const focus = (e: any) => {
 }
 const blur = (e: any) => {
   if (props.disabled) return
-  getEditorRange()
+  editorRange.value = getEditorRange()
   isChange.value = true
-  const htmlStr = handleHTMLStr(e.target.innerHTML)
-  if (!isShowModel.value) emit('blur', htmlStr)
+  if (!isShowModel.value) emit('blur', handleHTMLStr(e.target.innerHTML))
   if (isFoucs.value || props.loading) isShowModel.value = false
 }
 const input = (e: any) => {
@@ -89,7 +96,6 @@ const input = (e: any) => {
   emit('update:modelValue', handleHTMLStr(e.target.innerHTML))
   emit('change', handleHTMLStr(e.target.innerHTML))
   editorRange.value = getEditorRange()
-  console.log(editorRange.value)
   if (isShowModel.value) {
     console.log('input')
     emit('search', searchValue.value)
@@ -136,10 +142,10 @@ const keydown = (e: any) => {
   }
   const isCode = ((e.keyCode === 229 && e.key === '@') || (e.keyCode === 229 && e.code === 'Digit2') || e.keyCode === 50) && e.shiftKey
   if (isCode) {
+    // doToggleDialog()
     isShowModel.value = true
   }
 }
-const isShowModel = ref(false)
 const insertMention = (item: Object) => {
   selectPerson(item)
   isShowModel.value = false
@@ -169,7 +175,7 @@ const doToggleDialog = () => {
   const curNode = rangeInfo.range.endContainer
   if (!curNode || curNode.nodeName !== '#text') isShowModel.value = false
   const searchStr: any = curNode?.textContent?.slice(0, rangeInfo.selection.focusOffset)
-  const keywords = (/([^@]*)$/).exec(searchStr)
+  const keywords = (/@([^@]*)$/).exec(searchStr)
   if (keywords) {
     // 展示搜索选人
     const keyWords = keywords[1]
@@ -267,7 +273,6 @@ const insertHtmlAtCaret = (html: any, selection: any, range: any, offset: any) =
     }
   }
 }
-const isFoucs = ref(true)
 const mouseleave = () => {
   isFoucs.value = true
 }
@@ -308,7 +313,6 @@ const doOnPaste = (e: any) => {
 // 替换标签自己高亮
 const replaceContent = () => {
   const spanList = Editor.value.querySelectorAll('.at-span')
-  console.log(spanList)
   if (spanList.length === 0) return
   spanList.forEach((item: any) => {
     const id = item.dataset.person.split('&')[0]
